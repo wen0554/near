@@ -1,5 +1,7 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -45,28 +47,28 @@ public class GeohashBtreePositionService extends PositionService{
 		//无法删除
 	}
 	
-	public Map<Object,Long> search(double lng,double lat,int distance){
+	public List<Point> search(double lng,double lat,int distance){
 
 		return search(getLngCode(lng), getLatCode(lat), distance);
 	}
 	
-	public Map<Object,Long> search(int cntX,int cntY,int distance){
+	public List<Point> search(int lg,int lt,int distance){
 		int distY=(int)(distance/EARTH_RATIO);
 
-		int distX=(int)(distY/Math.sin((cntY*Math.PI/LATITUDE_MAXIMIZE)));
-		long min=merge(cntX-distX-1,cntY-distY-1);
-		long max=merge(cntX+distX+1,cntY+distY+1);
+		int distX=(int)(distY/Math.sin((lt*Math.PI/LATITUDE_MAXIMIZE)));
+		long min=merge(lg-distX-1,lt-distY-1);
+		long max=merge(lg+distX+1,lt+distY+1);
 		Set<Long> sets=search(min,max);
-		Map<Object,Long> map=new HashMap<Object,Long>();
+		List<Point> list=new ArrayList<Point>();
 		for(Long key:sets){
 			int pl[]=split(key);
 //			if(getDistance(getLongitude(pl[0]),getLatitude(pl[1]),lng,lat)<distance){
-			if(getDistance(pl[0],pl[1],cntX,cntY)<distance){
-				long l=pl[1];
-				map.put(table.get(key),((l<<32)|pl[0]));
+			int d=getDistance(pl[0],pl[1],lg,lt);
+			if(d<distance){
+				list.add(new Point(pl[0],pl[1],d,table.get(key)));
 			}
 		}
-		return map;
+		return list;
 	}
 	
 	/**根节点*/

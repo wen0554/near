@@ -1,5 +1,5 @@
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class GeohashArrayPositionService extends PositionService{
@@ -69,18 +69,18 @@ public class GeohashArrayPositionService extends PositionService{
 		//无法删除
 	}
 	
-	public Map<Object,Long> search(double lng,double lat,int distance){
+	public List<Point> search(double lng,double lat,int distance){
 
 		return search(getLngCode(lng), getLatCode(lat), distance);
 	}
 	
-	public Map<Object,Long> search(int cntX,int cntY,int distance){
+	public List<Point> search(int lg,int lt,int distance){
 		double dist=distance/EARTH_RATIO;
 		int distY=(int)dist;
 
-		int distX=(int)(dist/Math.sin((cntY*Math.PI/LATITUDE_MAXIMIZE)));
-		long min=merge(cntX-distX,cntY-distY);
-		long max=merge(cntX+distX,cntY+distY);
+		int distX=(int)(dist/Math.sin((lt*Math.PI/LATITUDE_MAXIMIZE)));
+		long min=merge(lg-distX,lt-distY);
+		long max=merge(lg+distX,lt+distY);
 		
 		int start,end,midd;
 		
@@ -120,16 +120,17 @@ public class GeohashArrayPositionService extends PositionService{
 		}
 		int endIndex=start;
 
-		Map<Object,Long> map=new HashMap<Object,Long>();
+		List<Point> list=new ArrayList<Point>();
 		while(startIndex<=endIndex){
 			Node n=this.nodeTable[startIndex++];
 			int pl[]=split(n.postion);
-			if(getDistance(pl[0],pl[1],cntX,cntY)<distance){
+			int d=getDistance(pl[0],pl[1],lg,lt);
+			if(d<distance){
 				long l=pl[1];
-				map.put(n.code,((l<<32)|pl[0]));
+				list.add(new Point(pl[0],pl[1],d,n.code));
 			}
 		}
-		return map;
+		return list;
 	}
 	
 	private Node[] nodeTable;
@@ -145,28 +146,4 @@ public class GeohashArrayPositionService extends PositionService{
 		}
 	}
 	
-	
-	public static void main(String args[])throws Exception{
-		int len=16;
-//		int result[]=new int[32];
-		
-		for(int lat=len-1;lat>=0;lat--){
-			for(int lng=0;lng<len;lng++){
-				int t=0;
-				for(int i=0;i<len;i++){
-					t=((t<<1)|(lng>>(len-1-i))&1);
-					t=((t<<1)|(lat>>(len-1-i))&1);
-					
-				}
-				if(t<10){
-					System.out.print("00");
-				}
-				else if(t<100){
-					System.out.print("0");
-				}
-				System.out.print(t+" ");
-			}
-			System.out.println();
-		}
-	}
 }

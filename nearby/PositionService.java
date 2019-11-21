@@ -1,6 +1,7 @@
 
 
-import java.util.Map;
+import java.util.Comparator;
+import java.util.List;
 
 public abstract class PositionService {
 	//2^30
@@ -52,73 +53,79 @@ public abstract class PositionService {
 		return (int)(Math.sqrt((lg*lg)+((lt*lt)))*EARTH_RATIO);
 	}
 	
-	
+	public class Point implements Comparable<Point>{
+		public int lngCode;
+		public int latCode;
+		public int distance;
+		public Object code;
+		public Point() {
+			
+		}
+		public Point(int lngCode, int latCode) {
+			this.lngCode = lngCode;
+			this.latCode = latCode;
+		}
+		public Point(int lngCode, int latCode, int distance) {
+			this.lngCode = lngCode;
+			this.latCode = latCode;
+			this.distance = distance;
+		}
+		public Point(int lngCode, int latCode, int distance,Object code) {
+			this.lngCode = lngCode;
+			this.latCode = latCode;
+			this.distance = distance;
+			this.code = code;
+		}
+		public void setLngCode(int lngCode) {
+			this.lngCode = lngCode;
+		}
+		public void setLatCode(int latCode) {
+			this.latCode = latCode;
+		}
+		public void setDistance(int distance) {
+			this.distance = distance;
+		}
+		public void setCode(Object code) {
+			this.code = code;
+		}
+		public int getLngCode() {
+			return lngCode;
+		}
+		public int getLatCode() {
+			return latCode;
+		}
+		public int getDistance() {
+			return distance;
+		}
+		public Object getCode() {
+			return code;
+		}
+		
+		public int compareTo(Point o) {
+			if(this.distance>o.distance){
+				return 1;
+			}
+			else if(this.distance<o.distance) {
+				return -1;
+			}
+			else{
+				return 0;
+			}
+		}
+		public boolean equals(Object obj){
+			if(obj==null || !(obj instanceof Point)){
+				return false;
+			}
+			return ((Point)obj).distance==this.distance;
+		}
+	}
 	//插入对象
 	public abstract void insert(double lng,double lat,Object code);
-	
 	public abstract void insert(int lg,int lt,Object code);
 	//删除对象
 	public abstract void remove(double lng,double lat,Object code);
 	public abstract void remove(int lg,int lt,Object code);
-	//查询对象
-	public abstract  Map<Object,Long> search(double lng,double lat,int distance);
-	
-	public abstract Map<Object,Long> search(int cntX,int cntY,int distance);
-
-	
-	
-	 //Geohash 经度编码
-	public static int getLngCode2(double lng){
-       int result=0;
-       double start=-180,end=180,midd;
-
-       for(int i=DATA_BITS;i>0;i--){
-            result<<=1;
-            midd=(start+end)/2;
-            if(lng>midd){
-                 result|=1;
-                 start=midd;
-            }
-           else{
-               end=midd;
-            }
-       }
-       return result;
-      }
-     
-    //Geohash 纬度编码
-	public static int getLatCode2(double lat){
-       int result=0;
-       double start=-90,end=90,midd;
-       for(int i=DATA_BITS-1;i>0;i--){
-    	   result<<=1;
-           midd=(start+end)/2;
-           if(lat>midd){
-                result|=1;
-                start=midd;
-           }
-          else{
-              end=midd;
-           }
-       }
-       return result;
-      }
-    
-	public static void main(String args[]) throws Exception{
-		int lg=getLngCode(114.507777);
-		System.out.println(lg);
-		lg=getLngCode2(114.507777);
-		System.out.println(lg);
-		double lng=getLongitude(lg);
-		System.out.println(lng);
-		
-		int lt=getLatCode(38.038064);
-		System.out.println(lt);
-		lt=getLatCode2(38.038064);
-		System.out.println(lt);
-		double lat=getLatitude(lt);
-		System.out.println(lat);
-	
-	}
-	
+	//查询对象,distance距离，单位：米; 返回: Map<code, Node>
+	public abstract  List<Point> search(double lng,double lat,int distance);
+	public abstract List<Point> search(int lg,int lt,int distance);
 }
